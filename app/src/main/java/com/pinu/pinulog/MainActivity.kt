@@ -29,10 +29,16 @@ import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
+    var flongitude: Double = 1.0
+    var flatitude: Double = 1.0
+    var markedTime: String? = null
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        setFragment()
 
         val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         button?.setOnClickListener {
@@ -44,26 +50,31 @@ class MainActivity : AppCompatActivity() {
             }
             else {
                 if(isGPSEnabled){
-                        val location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                        var longitude = location?.longitude!!
-                        var latitude = location.latitude
-                        Log.d("BasicSyntax", "Lati = $latitude, Longi = $longitude")
-                        toast("현재위치: $latitude, $longitude")
-
-                        val timestamp= LocalDateTime.now()
-                        val dateTime=timestamp.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-                        val goodDateTime=timestamp.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"))
-                        toast("$dateTime")
-                        //// firebase realtime database test 20210506
-                        val database = Firebase.database
-                        val myRef = database.getReference("$dateTime")
-
+                    val location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    var longitude = location?.longitude!!
+                    var latitude = location.latitude
+                    Log.d("BasicSyntax", "Lati = $latitude, Longi = $longitude")
+                    toast("현재위치: $latitude, $longitude")
+                    val timestamp= LocalDateTime.now()
+                    val dateTime=timestamp.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                    val goodDateTime=timestamp.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss"))
+                    toast("$dateTime")
+                    //// firebase realtime database test 20210506
+                    val database = Firebase.database
+                    val myRef = database.getReference("$dateTime")
                         myRef.setValue("$latitude, $longitude")
+                    //// test ends
 
-                        //// test ends
+                    // test frame fragment global var
+                    flongitude = longitude
+                    flatitude = latitude
+                    markedTime = goodDateTime
+                    //
 
-                        // on the textview -test
-                        Textview1.text="$goodDateTime\n $latitude, $longitude"
+                    // on the textview -test
+                    Textview1.text="$goodDateTime\n $latitude, $longitude"
+
+                    setFragment()
                 }
 
                 /*
@@ -91,5 +102,19 @@ class MainActivity : AppCompatActivity() {
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
         override fun onProviderEnabled(provider: String) {}
         override fun onProviderDisabled(provider: String) {}
+    }
+
+    fun setFragment() {
+        val mapsFragment: MapsFragment= MapsFragment()
+
+        var bundle = Bundle()
+        bundle.putDouble("longitude", flongitude)
+        bundle.putDouble("latitude", flatitude)
+        bundle.putString("markedTime", markedTime)
+        mapsFragment.arguments = bundle
+
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.add(R.id.map, mapsFragment)
+        transaction.commit()
     }
 }

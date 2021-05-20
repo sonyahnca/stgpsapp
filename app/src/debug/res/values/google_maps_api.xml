@@ -1,0 +1,24 @@
+<resources>
+    <!--
+    TODO: Before you run your application, you need a Google Maps API key.
+
+    To get one, follow this link, follow the directions and press "Create" at the end:
+
+    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=79:E0:3A:D4:4A:2E:18:DD:F2:E8:4B:24:D5:27:79:D1:2D:D9:AC:D5%3Bcom.pinu.pinulog
+
+    You can also add your credentials to an existing key, using these values:
+
+    Package name:
+    com.pinu.pinulog
+
+    SHA-1 certificate fingerprint:
+    79:E0:3A:D4:4A:2E:18:DD:F2:E8:4B:24:D5:27:79:D1:2D:D9:AC:D5
+
+    Alternatively, follow the directions here:
+    https://developers.google.com/maps/documentation/android/start#get-key
+
+    Once you have your key (it starts with "AIza"), replace the "google_maps_key"
+    string in this file.
+    -->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD_-0Fgv8LaYj6i4bXLMlodaCOHOTTDXa8</string>
+</resources>
