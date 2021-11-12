@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/loginButton"
-        android:text="Login"/>
+        android:text="Login"
+        android:visibility="gone"/>
 
     <Button
         android:layout_width="match_parent"
@@ -19,14 +20,68 @@
         android:id="@+id/btn_logout"
         android:text="Logout"/>
 
+
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center">
+
+    <EditText
+        android:id="@+id/editText_second"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+android:layout_gravity="center"
+        android:gravity="center"
+        android:ems="10"
+        android:inputType="number" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="초 간격"
+        android:layout_gravity="center"
+        android:gravity="center"
+        />
+</LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center">
 
+        <RadioGroup
+            android:id="@+id/radioButtonGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center">
+
+            <RadioButton
+                android:id="@+id/radioButtonCon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="상시 기록" />
+
+            <RadioButton
+                android:id="@+id/radioButtonPart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="특정 시간 기록"
+                />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/textLogPart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:visibility="gone">
+
         <EditText
-            android:id="@+id/editText_second"
+            android:id="@+id/editText_min"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -36,21 +91,42 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="초"
+            android:text="분 동안 기록합니다"
             android:layout_gravity="center"
             android:gravity="center"
             />
     </LinearLayout>
+    <EditText
+        android:id="@+id/editText_memo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:ems="10"
+        android:inputType="text"
+        android:hint="메모"/>
     <Switch
         android:id="@+id/switch1"
         android:layout_width="131dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="140dp"
         android:layout_marginLeft="140dp"
-        android:layout_marginTop="24dp"
+
         android:layout_marginEnd="122dp"
         android:layout_marginRight="122dp"
         android:text="기록" />
+
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="현재위치 즉시 기록"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="visible"/>
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,6 +138,8 @@
         android:id="@+id/btn_viewLog"
         android:text="로그 보기"
         android:visibility="gone"/>
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -89,7 +167,7 @@
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="425dp"
+            android:layout_height="500dp"
             android:layout_marginTop="29dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -98,14 +176,7 @@
             />
 
 
-        <Button
-            android:id="@+id/button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="현재위치 기록"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
