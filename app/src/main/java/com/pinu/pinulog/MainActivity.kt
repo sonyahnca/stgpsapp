@@ -1,4 +1,5 @@
-package com.pinu.pinulog
+package com.pinu.gpslanglongtest
+
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
     private val currentUser=FirebaseAuth.getInstance().currentUser?.email
     private val currentUserUid=FirebaseAuth.getInstance().currentUser?.uid
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -125,7 +127,6 @@ class MainActivity : AppCompatActivity() {
             toast("db read error")
         }
 
-
 //
         loginButton.setOnClickListener {
             recyclerAdapter = RecyclerAdapter()
@@ -141,6 +142,8 @@ class MainActivity : AppCompatActivity() {
         }
         if(!currentUser.isNullOrEmpty())
             loginButton.visibility=View.GONE
+        else
+            startActivity(Intent(this, LoginActivity::class.java))
 
         btn_logout.setOnClickListener {
             Firebase.auth.signOut()
@@ -163,17 +166,32 @@ class MainActivity : AppCompatActivity() {
                     repeatBool = true
                     periodicGpsLog(periodSecond)
                     editText_second.isEnabled = false
+                    editText_min.isEnabled = false
+                    radioButtonCon.isEnabled = false
+                    radioButtonPart.isEnabled = false
                 }
             }
             else{
                 toast("기록을 종료합니다.")
                 repeatBool=false
                 editText_second.isEnabled = true
+                editText_min.isEnabled = true
+                radioButtonCon.isEnabled = true
+                radioButtonPart.isEnabled = true
             }
 
         }
+        radioButtonGroup.setOnCheckedChangeListener{group, checkedId ->
+            when(checkedId){
+                R.id.radioButtonCon -> textLogPart.visibility = View.GONE
+                R.id.radioButtonPart -> textLogPart.visibility = View.VISIBLE
+            }
+        }
         button?.setOnClickListener {
             toast("현재 위치를 기록합니다.")
+            gpsLog()
+
+
         }
         btn_viewMap.setOnClickListener{
             layout_recycler.visibility = View.GONE
@@ -185,6 +203,8 @@ class MainActivity : AppCompatActivity() {
             btn_viewLog.visibility = View.GONE
             btn_viewMap.visibility = View.VISIBLE
         }
+
+
     }
     ///////oncreate end
 
@@ -225,6 +245,7 @@ class MainActivity : AppCompatActivity() {
             gpsLog()
             periodicGpsLog(periodSecond)
 
+            /* 리사이클러 업데이트 -- gpsLog 로 옮김
             recyclerAdapter = RecyclerAdapter()
             recyclerAdapter.submitList(this.modelList)
 
@@ -234,6 +255,9 @@ class MainActivity : AppCompatActivity() {
                 adapter = recyclerAdapter
                 Log.i("파이어베이스", "apply")
             }
+
+
+             */
         }
     }
 
@@ -275,22 +299,25 @@ class MainActivity : AppCompatActivity() {
                     val goodDateTime =
                         timestamp.format(DateTimeFormatter.ofPattern("yy.MM.dd HH:mm"))
                     toast("$dateTime")
+
                     //// firebase realtime database test 20210506
                     val database = Firebase.database
 
-                    data class Gpslog(val lon: Double? = null, val lat: Double? = null)
+                    data class Gpslog(val lon: Double? = null, val lat: Double? = null, val memo: String?="")
+
 
                     fun writeNewGps(
                         userId: String,
                         gpstime: String,
                         longitude: Double,
-                        latitude: Double
+                        latitude: Double,
+                        memo: String
                     ) {
-                        val gpslog = Gpslog(longitude, latitude)
+                        val gpslog = Gpslog(longitude, latitude, memo)
                         database.reference.child("users").child(userId).child(gpstime)
                             .setValue(gpslog)
                     }
-                    writeNewGps(currentUserUid.toString(), dateTime, getLongitude, getLatitude)
+                    writeNewGps(currentUserUid.toString(), dateTime, getLongitude, getLatitude, editText_memo.text.toString())
 
                     //// test ends
 
@@ -306,6 +333,11 @@ class MainActivity : AppCompatActivity() {
                     //데이터베이스 상 회원의 gpslog 읽기
                     db.child("users").child(currentUserUid.toString()).get().addOnSuccessListener {
                         Log.i("파이어베이스", "Got value ${(it.childrenCount)}")
+
+
+                        //////////// IMPORTANT ////////////
+                        this.modelList.clear() //modelList 중복 입력 방지 임시방편
+                        ///////////////////////////////////
 
                         for (i in it.children) {
                             var addressLine : String? = null
@@ -327,9 +359,20 @@ class MainActivity : AppCompatActivity() {
                                     i.key.toString(),
                                     i.child("lon").value.toString(),
                                     i.child("lat").value.toString(),
-                                    addressLine
+                                    addressLine,
+                                    i.child("memo").value.toString()
                                 )
                                 this.modelList.add(0,gpsLogModel)
+
+                                recyclerAdapter = RecyclerAdapter()
+                                recyclerAdapter.submitList(this.modelList)
+
+                                logRecyclerView.apply {
+                                    layoutManager =
+                                        LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
+                                    adapter = recyclerAdapter
+                                    Log.i("파이어베이스", "apply")
+                                }
                             }
                         }
                     }.addOnFailureListener {

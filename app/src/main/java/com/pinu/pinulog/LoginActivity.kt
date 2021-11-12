@@ -1,4 +1,4 @@
-package com.pinu.pinulog
+package com.pinu.gpslanglongtest
 
 import android.app.Activity
 import android.app.AlertDialog

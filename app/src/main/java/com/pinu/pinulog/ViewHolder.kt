@@ -1,4 +1,4 @@
-package com.pinu.pinulog
+package com.pinu.gpslanglongtest
 
 import android.util.Log
 import android.view.View
