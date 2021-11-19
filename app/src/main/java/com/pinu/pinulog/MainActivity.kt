@@ -1,7 +1,9 @@
 package com.pinu.gpslanglongtest
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.*
@@ -17,6 +19,7 @@ import android.util.Log
 import android.view.View
 import android.widget.CompoundButton
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.maps.GoogleMap
 import com.google.firebase.auth.FirebaseAuth
@@ -68,29 +71,34 @@ class MainActivity : AppCompatActivity() {
         //gps 세팅
         val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val isGPSEnabled: Boolean = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        if (Build.VERSION.SDK_INT >= 23 &&
-            ContextCompat.checkSelfPermission(
-                applicationContext,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this@MainActivity,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                0
-            )
-        } else {
-            when {
-                isGPSEnabled -> {
-                    lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                        1000,
-                        1F,
-                        gpsLocationListener)
-                }
-                else -> {
+
+            if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this@MainActivity,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    0
+                )
+                if (Build.VERSION.SDK_INT>=29) {backgroundPermission()}
+            } else {
+                when {
+                    isGPSEnabled -> {
+                        lm.requestLocationUpdates(
+                            LocationManager.GPS_PROVIDER,
+                            1000,
+                            1F,
+                            gpsLocationListener
+                        )
+                    }
+                    else -> {
+                    }
                 }
             }
-        }
+
 
         var mGeocoder = Geocoder(applicationContext, Locale.KOREAN)
         var mResultList: List<Address>? = null
@@ -269,6 +277,19 @@ class MainActivity : AppCompatActivity() {
         val isGPSEnabled: Boolean = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val isNetworkEnabled: Boolean = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
+        if(Build.VERSION.SDK_INT >=29 &&
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ){
+            toast("백그라운드 작동을 위해 권한을 항상 허용으로 설정해주세요.")
+            ActivityCompat.requestPermissions(
+                this@MainActivity,
+                arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                0
+            )
+        }
         if (Build.VERSION.SDK_INT >= 23 &&
             ContextCompat.checkSelfPermission(
                 applicationContext,
@@ -280,6 +301,7 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 0
             )
+            if (Build.VERSION.SDK_INT>=29) {backgroundPermission()}
         } else {
             when {
                 isGPSEnabled -> {
@@ -400,5 +422,14 @@ class MainActivity : AppCompatActivity() {
         override fun onProviderEnabled(provider: String) {}
         override fun onProviderDisabled(provider: String) {}
     }
+
+    private fun backgroundPermission(){
+        ActivityCompat.requestPermissions(
+            this@MainActivity,
+            arrayOf(
+                android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+            ), 2)
+    }
+
 
 }
