@@ -38,6 +38,7 @@ class RecyclerAdapter: RecyclerView.Adapter<MyViewHolder>() {
             else
                 holder.itemView.gps_log_detail.visibility = View.GONE
 
+            // GPS 기록 삭제
             holder.itemView.btn_log_delete.setOnClickListener {
                 Firebase.database.reference.child("users")
                     .child(FirebaseAuth.getInstance().currentUser?.uid.toString())
@@ -46,6 +47,27 @@ class RecyclerAdapter: RecyclerView.Adapter<MyViewHolder>() {
                 notifyDataSetChanged()
                 holder.itemView.gps_log_detail.visibility = View.GONE
             }
+
+            // GPS 기록 메모 수정
+            holder.itemView.btn_log_modify.setOnClickListener {
+                holder.itemView.gps_log_detail_btn1.visibility = View.GONE
+                holder.itemView.gps_log_detail_btn2.visibility = View.VISIBLE
+            }
+            holder.itemView.btn_log_modify_done.setOnClickListener {
+                holder.itemView.gps_log_detail_btn1.visibility = View.VISIBLE
+                holder.itemView.gps_log_detail_btn2.visibility = View.GONE
+                Firebase.database.reference.child("users")
+                    .child(FirebaseAuth.getInstance().currentUser?.uid.toString())
+                    .child(this.modelList[position].logTime.toString()).child("memo").setValue("${holder.itemView.editText_log_modify.text.toString()}")
+                this.modelList[position].memo = holder.itemView.editText_log_modify.text.toString()
+                notifyDataSetChanged()
+            }
+            holder.itemView.btn_log_modify_cancel.setOnClickListener {
+                holder.itemView.gps_log_detail_btn1.visibility = View.VISIBLE
+                holder.itemView.gps_log_detail_btn2.visibility = View.GONE
+            }
+
+
         }
     }
 

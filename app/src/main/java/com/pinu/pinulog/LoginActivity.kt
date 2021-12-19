@@ -106,11 +106,18 @@ class LoginActivity :AppCompatActivity() {
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
+
+    // 계정 생성. 생성 시 서버에 Firebase auth 외에 해당 ID의 DB도 같이 생성
     fun createAndLoginEmail(){
         auth.createUserWithEmailAndPassword(email.text.toString(), password.text.toString()).addOnCompleteListener(this){ task ->
             if(task.isSuccessful){
                 val user = auth.currentUser
                 Firebase.database.reference.child("users").child(user?.uid.toString()).child("email").setValue(user?.email.toString())
+
+                // 데이터베이스 저장을 위한 문자열 수정
+                val modifiedEmailStr = user?.email.toString().replace("@","-at-").replace(".","-dot-")
+
+                Firebase.database.reference.child("users").child("userEmail").child(modifiedEmailStr).setValue(user?.uid.toString())
                 moveMain(user)
             }
             else if (task.exception?.message.isNullOrEmpty()){

@@ -2,6 +2,7 @@ package com.pinu.gpslanglongtest
 
 import android.Manifest
 import android.app.Dialog
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -20,6 +21,8 @@ import android.view.View
 import android.widget.CompoundButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.maps.GoogleMap
 import com.google.firebase.auth.FirebaseAuth
@@ -29,19 +32,18 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.noButton
-import org.jetbrains.anko.toast
-import org.jetbrains.anko.yesButton
-
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import kotlinx.android.synthetic.main.drawer.*
+import org.jetbrains.anko.*
 
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.concurrent.schedule
+import kotlin.concurrent.timer
 
 
 class MainActivity : AppCompatActivity() {
@@ -54,19 +56,32 @@ class MainActivity : AppCompatActivity() {
     var periodSecond: Long = 0
     var repeatBool: Boolean = false
 
+    var partMinute: Long = 0
+
     //리사이클러뷰 및 지도 fragment 용
     var modelList=ArrayList<GpsLogModel>()
     private lateinit var recyclerAdapter: RecyclerAdapter
+
+    //공유 이용자 리사이클러뷰용
+    var shareModelList=ArrayList<ShareEmailModel>()
+    private lateinit var recyclerAdapterShare: RecyclerAdapterShare
 
     val db = Firebase.database.reference
 
     private val currentUser=FirebaseAuth.getInstance().currentUser?.email
     private val currentUserUid=FirebaseAuth.getInstance().currentUser?.uid
+    val modifiedEmailStr = currentUser.toString().replace("@","-at-").replace(".","-dot-")
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.drawer) // It is drawer layout that includes main
+
+        // drawer(드로어) 설정
+        toolbarBtn.setOnClickListener {
+            drawer_layout.openDrawer((GravityCompat.START))
+        }
+
 
         //gps 세팅
         val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -102,41 +117,52 @@ class MainActivity : AppCompatActivity() {
 
         var mGeocoder = Geocoder(applicationContext, Locale.KOREAN)
         var mResultList: List<Address>? = null
-        //데이터베이스 상 회원의 gpslog 읽기
+        //데이터베이스 상 회원의 gpslog 읽기, share 읽기
         db.child("users").child(currentUserUid.toString()).get().addOnSuccessListener {
             Log.i("파이어베이스", "Got value ${(it.childrenCount)}")
 
             for (i in it.children) {
-                var addressLine : String? = null
                 if(i.child("lat").exists()) {
-                    try {
-
-                        mResultList = mGeocoder.getFromLocation(
-                            i.child("lat").value.toString().toDouble(),
-                            i.child("lon").value.toString().toDouble(), 1
-                        )
-                    } catch (e: IOException) {
-                    }
-                    if (mResultList != null) {
-                        Log.i("파이어베이스", mResultList!![0].getAddressLine(0))
-                        addressLine = mResultList!![0].getAddressLine(0)
-                    }
-
                     val gpsLogModel = GpsLogModel(
                         i.key.toString(),
                         i.child("lon").value.toString(),
                         i.child("lat").value.toString(),
-                        addressLine
+                        i.child("addressLine").value.toString(),
+                        i.child("memo").value.toString()
                     )
-                    this.modelList.add(0,gpsLogModel)
+                    this.modelList.add(0, gpsLogModel)
+
+                    recyclerAdapter = RecyclerAdapter()
+                    recyclerAdapter.submitList(this.modelList)
+                }
+            }
+
+            for (i in it.child("share").children){
+                // 공유 이용자 읽기
+                val shareEmailModel = ShareEmailModel(
+                    i.key.toString().replace("-at-","@").replace("-dot-","."),
+                    i.value.toString()
+                )
+                this.shareModelList.add(0,shareEmailModel)
+
+                recyclerAdapterShare = RecyclerAdapterShare(this)
+                recyclerAdapterShare.submitList(this.shareModelList)
+
+                shareRecyclerView.apply {
+                    layoutManager =
+                        LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
+                    adapter = recyclerAdapterShare
+                    Log.i("파이어베이스", "apply")
                 }
             }
         }.addOnFailureListener {
             toast("db read error")
         }
 
+
 //
-        loginButton.setOnClickListener {
+
+        if(!currentUser.isNullOrEmpty()){
             recyclerAdapter = RecyclerAdapter()
             recyclerAdapter.submitList(this.modelList)
 
@@ -146,10 +172,7 @@ class MainActivity : AppCompatActivity() {
                 adapter = recyclerAdapter
                 Log.i("파이어베이스", "apply")
             }
-
         }
-        if(!currentUser.isNullOrEmpty())
-            loginButton.visibility=View.GONE
         else
             startActivity(Intent(this, LoginActivity::class.java))
 
@@ -162,21 +185,58 @@ class MainActivity : AppCompatActivity() {
 
         //val binding = ActivityMainBinding.inflate(layoutInflater)
 
+        // 상시기록, 특정시간기록 라디오 버튼
+        var partLogButton: Boolean = false
+        radioButtonGroup.setOnCheckedChangeListener{group, checkedId ->
+            when(checkedId){
+                R.id.radioButtonCon -> {
+                    textLogPart.visibility = View.GONE
+                    partLogButton = false
+                }
+                R.id.radioButtonPart -> {
+                    textLogPart.visibility = View.VISIBLE
+                    partLogButton = true
+                }
+            }
+        }
+
+        // 기록 스위치: 상시기록, 특정시간 기록에 따른 시간 설정 등
         switch1.setOnCheckedChangeListener{CompoundButton, onSwitch ->
             if (onSwitch){
                 if(editText_second.text.isBlank())
                 {
-                    toast("시간을 입력해주세요.")
+                    toast("시간 간격을 입력해주세요.")
                     switch1.isChecked=false
                 }else {
-                    toast("기록을 시작합니다.")
-                    periodSecond = editText_second.text.toString().toLong()
-                    repeatBool = true
-                    periodicGpsLog(periodSecond)
-                    editText_second.isEnabled = false
-                    editText_min.isEnabled = false
-                    radioButtonCon.isEnabled = false
-                    radioButtonPart.isEnabled = false
+                    if (partLogButton){
+                        if(editText_min.text.isBlank()){
+                            toast("기록 지속 시간을 입력해주세요.")
+                            switch1.isChecked=false
+                        }else {
+                            partMinute = editText_min.text.toString().toLong()
+                            toast("${partMinute}분 동안 기록합니다.")
+                            periodSecond = editText_second.text.toString().toLong()
+                            repeatBool = true
+                            periodicGpsLog(periodSecond)
+                            editText_second.isEnabled = false
+                            editText_min.isEnabled = false
+                            radioButtonCon.isEnabled = false
+                            radioButtonPart.isEnabled = false
+
+                            Handler().postDelayed({
+                                switch1.isChecked=false
+                            }, partMinute*60000+500L)
+                        }
+                    }else {
+                        toast("기록을 시작합니다.")
+                        periodSecond = editText_second.text.toString().toLong()
+                        repeatBool = true
+                        periodicGpsLog(periodSecond)
+                        editText_second.isEnabled = false
+                        editText_min.isEnabled = false
+                        radioButtonCon.isEnabled = false
+                        radioButtonPart.isEnabled = false
+                    }
                 }
             }
             else{
@@ -189,17 +249,11 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
-        radioButtonGroup.setOnCheckedChangeListener{group, checkedId ->
-            when(checkedId){
-                R.id.radioButtonCon -> textLogPart.visibility = View.GONE
-                R.id.radioButtonPart -> textLogPart.visibility = View.VISIBLE
-            }
-        }
+
+        // 현재위치 즉시 기록 버튼
         button?.setOnClickListener {
             toast("현재 위치를 기록합니다.")
             gpsLog()
-
-
         }
         btn_viewMap.setOnClickListener{
             layout_recycler.visibility = View.GONE
@@ -213,11 +267,81 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+        // 공유 유저 이메일 추가 버튼
+        btn_share_email_add.setOnClickListener {
+            if(editText_share_email_add.text.isBlank())
+                toast("이메일을 입력해주세요.")
+            else {
+                // 추가하려는 대상의 uid를 받아 저장함
+                db.child("users")
+                    .child("userEmail")
+                    .child(editText_share_email_add.text.toString().replace("@", "-at-")
+                    .replace(".", "-dot-"))
+                    .get().addOnSuccessListener {
+                        if(it.value.toString() != "null") {
+                            toast("공유 대상을 추가합니다.")
+                            this.shareModelList.clear()
+                            db.child("users")
+                                .child(currentUserUid.toString())
+                                .child("share")
+                                .child(
+                                    editText_share_email_add.text.toString().replace("@", "-at-")
+                                        .replace(".", "-dot-")
+                                ).setValue(it.value.toString())
+
+                            db.child("users").child(currentUserUid.toString()).get().addOnSuccessListener {
+                                for (i in it.child("share").children) {
+                                    // 공유 이용자 읽기
+                                    val shareEmailModel = ShareEmailModel(
+                                        i.key.toString().replace("-at-", "@").replace("-dot-", "."),
+                                        i.value.toString()
+                                    )
+                                    this.shareModelList.add(0, shareEmailModel)
+
+                                    recyclerAdapterShare = RecyclerAdapterShare(this)
+                                    recyclerAdapterShare.submitList(this.shareModelList)
+
+                                    shareRecyclerView.apply {
+                                        layoutManager =
+                                            LinearLayoutManager(
+                                                this@MainActivity,
+                                                LinearLayoutManager.VERTICAL,
+                                                false
+                                            )
+                                        adapter = recyclerAdapterShare
+                                        Log.i("파이어베이스", "apply")
+                                    }
+                                }
+                            }.addOnFailureListener {
+                                toast("db read error")
+                            }
+                        }else{
+                            toast("존재하지 않는 계정입니다.")
+                        }
+                }.addOnFailureListener{
+                    toast("DB ERROR")
+                }
+            }
+        }
+
+        btn_my_list.setOnClickListener {
+            layout_share_list.visibility = View.GONE
+            layout_my_list.visibility = View.VISIBLE
+            btn_my_list.isEnabled = false
+            btn_share_list.isEnabled = true
+        }
+
+
+        btn_share_list.setOnClickListener {
+            layout_share_list.visibility = View.VISIBLE
+            layout_my_list.visibility = View.GONE
+            btn_my_list.isEnabled = true
+            btn_share_list.isEnabled = false
+        }
+
+
     }
-    ///////oncreate end
-
-
-
+    ///////onCreate end
 
 
 
@@ -236,7 +360,6 @@ class MainActivity : AppCompatActivity() {
         transaction.add(R.id.map, mapsFragment)
         transaction.commit()
     }
-
 
     //반복실행
     private val mDelayHandler: Handler by lazy{
@@ -263,8 +386,6 @@ class MainActivity : AppCompatActivity() {
                 adapter = recyclerAdapter
                 Log.i("파이어베이스", "apply")
             }
-
-
              */
         }
     }
@@ -310,9 +431,11 @@ class MainActivity : AppCompatActivity() {
 
                     var getLongitude = location?.longitude!!
                     var getLatitude = location.latitude
+                    var getAddressLine = geocoder(getLatitude, getLongitude)
 
                     Log.d("BasicSyntax", "Longi = $getLongitude, Lati = $getLatitude")
-                    toast("현재위치: $getLatitude, $getLongitude")
+
+                    // toast("현재위치: $getLatitude, $getLongitude")
 
 
                     val timestamp = LocalDateTime.now()
@@ -320,12 +443,12 @@ class MainActivity : AppCompatActivity() {
                         timestamp.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                     val goodDateTime =
                         timestamp.format(DateTimeFormatter.ofPattern("yy.MM.dd HH:mm"))
-                    toast("$dateTime")
+                    // toast("$dateTime")
 
                     //// firebase realtime database test 20210506
                     val database = Firebase.database
 
-                    data class Gpslog(val lon: Double? = null, val lat: Double? = null, val memo: String?="")
+                    data class Gpslog(val lon: Double? = null, val lat: Double? = null, val memo: String?="", val device: String?="", val addressLine: String?="")
 
 
                     fun writeNewGps(
@@ -333,14 +456,17 @@ class MainActivity : AppCompatActivity() {
                         gpstime: String,
                         longitude: Double,
                         latitude: Double,
-                        memo: String
+                        memo: String,
+                        device: String,
+                        addressLine: String
                     ) {
-                        val gpslog = Gpslog(longitude, latitude, memo)
+                        val gpslog = Gpslog(longitude, latitude, memo, device, addressLine)
                         database.reference.child("users").child(userId).child(gpstime)
                             .setValue(gpslog)
                     }
-                    writeNewGps(currentUserUid.toString(), dateTime, getLongitude, getLatitude, editText_memo.text.toString())
-
+                    writeNewGps(currentUserUid.toString(), dateTime, getLongitude, getLatitude, editText_memo.text.toString(),
+                        // 디바이스 이름 넣기
+                        Build.MODEL, getAddressLine)
                     //// test ends
 
                     //test frame fragment global var
@@ -381,7 +507,7 @@ class MainActivity : AppCompatActivity() {
                                     i.key.toString(),
                                     i.child("lon").value.toString(),
                                     i.child("lat").value.toString(),
-                                    addressLine,
+                                    i.child("addressLine").value.toString(),
                                     i.child("memo").value.toString()
                                 )
                                 this.modelList.add(0,gpsLogModel)
@@ -429,6 +555,14 @@ class MainActivity : AppCompatActivity() {
             arrayOf(
                 android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
             ), 2)
+    }
+
+    // 좌표 -> 주소
+    fun geocoder(lat: Double=0.0, lon: Double=0.0): String {
+        var mGeocoder = Geocoder(applicationContext, Locale.KOREAN)
+        var mResultList: List<Address>? = null
+        mResultList = mGeocoder.getFromLocation(lat, lon, 1)
+        return mResultList!![0].getAddressLine(0)
     }
 
 
