@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,178 +8,167 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
+
+    <!-- 툴바, 드로어, 즉시 기록 버튼 -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/loginButton"
-        android:text="Login"
-        android:visibility="gone"/>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/btn_logout"
-        android:text="Logout"/>
-
-
-
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center">
-
-    <EditText
-        android:id="@+id/editText_second"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-android:layout_gravity="center"
-        android:gravity="center"
-        android:ems="10"
-        android:inputType="number" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="초 간격"
-        android:layout_gravity="center"
-        android:gravity="center"
-        />
-</LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center">
-
-        <RadioGroup
-            android:id="@+id/radioButtonGroup"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme" >
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center">
-
-            <RadioButton
-                android:id="@+id/radioButtonCon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="상시 기록" />
-
-            <RadioButton
-                android:id="@+id/radioButtonPart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="특정 시간 기록"
-                />
-        </RadioGroup>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/textLogPart"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:visibility="gone">
-
-        <EditText
-            android:id="@+id/editText_min"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:ems="10"
-            android:inputType="number" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="분 동안 기록합니다"
-            android:layout_gravity="center"
-            android:gravity="center"
+            android:src="@drawable/ic_baseline_menu_24"
+            android:id="@+id/toolbarBtn"
+            android:layout_gravity="left"
             />
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="탭하여 현재위치 즉시 기록"
+            android:visibility="visible"
+            android:layout_gravity="center"
+            android:gravity="center" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:visibility="invisible"
+            />
+    </androidx.appcompat.widget.Toolbar>
+    <!-- 툴바, 드로어, 즉시 기록 버튼 끝 -->
+
+    <!-- 내기록, 공유목록 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_my_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="내 기록"
+            android:layout_weight="1"
+            android:enabled="false"
+            style="?android:attr/borderlessButtonStyle"
+            android:background="#777777"
+            />
+        <Button
+            android:id="@+id/btn_share_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="공유 목록"
+            android:layout_weight="1"
+            style="?android:attr/borderlessButtonStyle"
+            android:background="#777777"/>
     </LinearLayout>
-    <EditText
-        android:id="@+id/editText_memo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:ems="10"
-        android:inputType="text"
-        android:hint="메모"/>
-    <Switch
-        android:id="@+id/switch1"
-        android:layout_width="131dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="140dp"
-        android:layout_marginLeft="140dp"
+    <!-- 내기록, 공유목록 버튼 끝 -->
 
-        android:layout_marginEnd="122dp"
-        android:layout_marginRight="122dp"
-        android:text="기록" />
-
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="현재위치 즉시 기록"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:visibility="visible"/>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/btn_viewMap"
-        android:text="지도 보기"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/btn_viewLog"
-        android:text="로그 보기"
-        android:visibility="gone"/>
-
-
+    <!-- 내 기록 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:id="@+id/layout_recycler">
-
-        <TextView
+        android:id="@+id/layout_my_list">
+        <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pinned" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/logRecyclerView"
+            android:id="@+id/btn_viewMap"
+            android:text="지도 보기"/>
+        <Button
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_viewLog"
+            android:text="로그 보기"
+            android:visibility="gone"/>
 
+        <!-- 내 기록 리사이클러 뷰 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:id="@+id/layout_recycler">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pinned" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/logRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+        <!-- 내 기록 리사이클러 뷰 끝 -->
+
+        <!-- 내 기록 지도 뷰 -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <fragment
+                android:id="@+id/map"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="2dp"
+                tools:layout="@layout/abc_search_view" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- 내 기록 지도 뷰 끝 -->
     </LinearLayout>
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- 내 기록 끝 -->
+
+
+    <!-- 공유 기록 -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-
-        <fragment
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:id="@+id/layout_share_list"
+        android:visibility="gone">
+        <!-- 공유 유저 추가 -->
+        <EditText
+            android:id="@+id/editText_share_email_add"
             android:layout_width="match_parent"
-            android:layout_height="500dp"
-            android:layout_marginTop="29dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:layout="@layout/abc_search_view"
-            />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:inputType="text"
+            android:hint="이메일"/>
+        <Button
+            android:id="@+id/btn_share_email_add"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="추가하기"/>
+        <!-- 공유 유저 추가 끝 -->
 
+        <!-- 공유 계정 목록 리사이클러 뷰 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:id="@+id/layout_recycler_share">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="공유 유저" />
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/shareRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+        <!-- 공유 계정 목록 리사이클러 뷰 끝 -->
+    </LinearLayout>
+    <!-- 공유 기록 끝 -->
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!--
     <DatePicker

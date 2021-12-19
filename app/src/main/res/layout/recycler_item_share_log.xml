@@ -11,7 +11,8 @@
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
-    android:id="@+id/card_gpslog">
+    android:id="@+id/card_gpslog"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,7 +51,6 @@
         android:orientation="vertical"
         android:id="@+id/gps_log_detail"
         android:visibility="gone">
-        <!-- VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV Visibility = GONE!!!!!!-->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -94,90 +94,12 @@
 
         </LinearLayout>
 
-        <!--
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Map"
-            android:textSize="10sp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="10dp"/>
-        <fragment
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="150sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:layout="@layout/abc_search_view"
-            />
-        -->
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:id="@+id/gps_log_detail_btn1">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginRight="1dp"
-                android:id="@+id/btn_log_modify"
-                android:text="메모 수정"
-                app:backgroundTint="#005EFF"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginLeft="1dp"
-                android:id="@+id/btn_log_delete"
-                android:text="기록 삭제"
-                app:backgroundTint="#CC2828"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:id="@+id/gps_log_detail_btn2"
-            android:visibility="gone">
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:hint="수정할 메모를 입력하세요"
-                android:id="@+id/editText_log_modify"/>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginRight="1dp"
-                    android:id="@+id/btn_log_modify_done"
-                    android:text="메모 저장"
-                    app:backgroundTint="#005EFF"/>
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="1dp"
-                    android:id="@+id/btn_log_modify_cancel"
-                    android:text="수정 취소"
-                    app:backgroundTint="#CC2828"/>
-            </LinearLayout>
-        </LinearLayout>
-
     </LinearLayout>
-
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginBottom="10dp"
+    />
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>
